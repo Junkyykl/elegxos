@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Νέος Φαντάρος</title>
+<style>
+    body { font-family: Arial, sans-serif; background:#f4f5f7; margin:0; padding:20px; }
+    h1 { color:#1a3c6e; }
+    label { display:block; margin-top:12px; font-size:14px; color:#333; }
+    input {
+        width:100%; max-width:320px; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:4px;
+        box-sizing:border-box;
+    }
+    button {
+        margin-top:16px; background:#1a3c6e; color:#fff; padding:10px 16px; border:none;
+        border-radius:6px; cursor:pointer; font-size:14px;
+    }
+    a.button {
+        display:inline-block; margin-top:16px; margin-left:8px; background:#555; color:#fff; padding:10px 16px;
+        border-radius:6px; text-decoration:none;
+    }
+    #qrResult { margin-top:24px; text-align:center; }
+    #qrResult img { border:1px solid #ccc; padding:10px; background:#fff; }
+</style>
+</head>
+<body>
+    <h1>Καταχώρηση Νέου Φαντάρου</h1>
+    <form id="form">
+        <label>Ονοματεπώνυμο
+            <input type="text" id="onomateponymo" required>
+        </label>
+        <label>Αριθμός Μητρώου (Α.Μ.)
+            <input type="text" id="am">
+        </label>
+        <label>Στρατόπεδο
+            <input type="text" id="stratopedo">
+        </label>
+        <button type="submit">Καταχώρηση & Δημιουργία QR</button>
+    </form>
+    <a class="button" href="/">⬅ Πίσω στη Λίστα</a>
+
+    <div id="qrResult"></div>
+
+<script>
+document.getElementById('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const onomateponymo = document.getElementById('onomateponymo').value;
+    const am = document.getElementById('am').value;
+
+    const res = await fetch('/api/fantaroi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ onomateponymo, am })
+    });
+    const data = await res.json();
+
+    document.getElementById('qrResult').innerHTML = `
+        <h3>QR Code για: ${data.onomateponymo}</h3>
+        <img src="${data.qr_image}" width="220" height="220"><br>
+        <button onclick="window.print()">🖨 Εκτύπωση</button>
+    `;
+    document.getElementById('form').reset();
+});
+</script>
+</body>
+</html>

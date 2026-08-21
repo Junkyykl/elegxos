@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Έλεγχος Οπλιτών - Live Κατάσταση</title>
+<style>
+    body { font-family: Arial, sans-serif; background:#f4f5f7; margin:0; padding:20px; }
+    h1 { color:#1a3c6e; }
+    .toolbar { margin-bottom:16px; display:flex; gap:10px; }
+    a.button, button {
+        background:#1a3c6e; color:#fff; padding:10px 16px; border:none; border-radius:6px;
+        text-decoration:none; cursor:pointer; font-size:14px;
+    }
+    table { width:100%; border-collapse: collapse; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    th, td { padding:10px 12px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
+    th { background:#1a3c6e; color:#fff; }
+    .mesa { color:#0a7d2c; font-weight:bold; }
+    .ekso { color:#c0392b; font-weight:bold; }
+    .badge { padding:3px 8px; border-radius:12px; font-size:12px; }
+    .badge.mesa { background:#e3f7e8; }
+    .badge.ekso { background:#fde8e6; }
+</style>
+</head>
+<body>
+    <h1>Έλεγχος Οπλιτών — Live Κατάσταση</h1>
+    <div class="toolbar">
+        <a class="button" href="/scan.html">📷 Σάρωση QR (Είσοδος/Έξοδος)</a>
+        <a class="button" href="/add.html">➕ Νέος Φαντάρος</a>
+        <button onclick="fortoseLista()">🔄 Ανανέωση</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Ονοματεπώνυμο</th>
+                <th>Α.Μ.</th>
+                <th>Στρατόπεδο</th>
+                <th>Κατάσταση</th>
+                <th>Τελευταία Έξοδος</th>
+                <th>Τελευταία Είσοδος</th>
+            </tr>
+        </thead>
+        <tbody id="lista"></tbody>
+    </table>
+
+<script>
+async function fortoseLista() {
+    const res = await fetch('/api/fantaroi');
+    const data = await res.json();
+    const tbody = document.getElementById('lista');
+    tbody.innerHTML = data.map(f => `
+        <tr>
+            <td>${f.onomateponymo}</td>
+            <td>${f.am || '-'}</td>
+            <td>${f.stratopedo || '-'}</td>
+            <td><span class="badge ${f.katastasi}">${f.katastasi === 'mesa' ? 'ΜΕΣΑ' : 'ΕΞΩ'}</span></td>
+            <td>${f.teleutaia_eksodos ? new Date(f.teleutaia_eksodos).toLocaleString('el-GR') : '-'}</td>
+            <td>${f.teleutaia_eisodos ? new Date(f.teleutaia_eisodos).toLocaleString('el-GR') : '-'}</td>
+        </tr>
+    `).join('');
+}
+
+fortoseLista();
+
+// Live ενημέρωση μέσω WebSocket
+const ws = new WebSocket(`ws://${location.host}`);
+ws.onmessage = () => fortoseLista();
+</script>
+</body>
+</html>
